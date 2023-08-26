@@ -3,6 +3,10 @@ namespace bangazon.Models;
 
 public class Product
 {
+    public Product()
+    {
+        this.Orders = new HashSet<Order>();
+    }
     public int Id { get; set; }
     [Required]
     public string ProductName { get; set; }
@@ -10,7 +14,10 @@ public class Product
     public decimal ProductPrice { get; set; }
     public int SellerId { get; set; }
     public int ProductTypeId { get; set; }
+    public string ProductTypeName { get; set; }
 
-    List<Order> orders { get; set; }
+    public ICollection<Order> Orders { get; set; }
+    public List<ProductType> ProductTypes { get; set; }
+
 
 }

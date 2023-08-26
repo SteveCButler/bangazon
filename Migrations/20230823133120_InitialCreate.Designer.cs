@@ -12,8 +12,8 @@ using bangazon.Models;
 namespace bangazon.Migrations
 {
     [DbContext(typeof(BangazonDbContext))]
-    [Migration("20230823005746_initialCreate")]
-    partial class initialCreate
+    [Migration("20230823133120_InitialCreate")]
+    partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -52,7 +52,7 @@ namespace bangazon.Migrations
                         new
                         {
                             Id = 1,
-                            OrderDate = new DateTime(2023, 8, 22, 19, 57, 45, 704, DateTimeKind.Local).AddTicks(9222),
+                            OrderDate = new DateTime(2023, 8, 23, 8, 31, 20, 597, DateTimeKind.Local).AddTicks(6337),
                             StatusId = 1,
                             UserId = 1,
                             User_PaymentId = 1
@@ -60,7 +60,7 @@ namespace bangazon.Migrations
                         new
                         {
                             Id = 2,
-                            OrderDate = new DateTime(2023, 8, 22, 19, 57, 45, 704, DateTimeKind.Local).AddTicks(9261),
+                            OrderDate = new DateTime(2023, 8, 23, 8, 31, 20, 597, DateTimeKind.Local).AddTicks(6369),
                             StatusId = 1,
                             UserId = 2,
                             User_PaymentId = 2
@@ -119,11 +119,16 @@ namespace bangazon.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<int?>("OrderId")
+                        .HasColumnType("integer");
+
                     b.Property<string>("PaymentMethod")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("OrderId");
 
                     b.ToTable("PaymentTypes");
 
@@ -158,9 +163,6 @@ namespace bangazon.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("OrderId")
-                        .HasColumnType("integer");
-
                     b.Property<string>("ProductDescription")
                         .IsRequired()
                         .HasColumnType("text");
@@ -179,8 +181,6 @@ namespace bangazon.Migrations
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("OrderId");
 
                     b.ToTable("Products");
 
@@ -220,39 +220,6 @@ namespace bangazon.Migrations
                             ProductPrice = 650.00m,
                             ProductTypeId = 2,
                             SellerId = 1
-                        });
-                });
-
-            modelBuilder.Entity("bangazon.Models.ProductOrder", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("OrderId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("ProductId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("ProductOrders");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            OrderId = 1,
-                            ProductId = 1
-                        },
-                        new
-                        {
-                            Id = 2,
-                            OrderId = 2,
-                            ProductId = 2
                         });
                 });
 
@@ -373,31 +340,19 @@ namespace bangazon.Migrations
                         });
                 });
 
-            modelBuilder.Entity("bangazon.Models.UserPaymentType", b =>
+            modelBuilder.Entity("OrderProduct", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
+                    b.Property<int>("OrdersId")
                         .HasColumnType("integer");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("PaymentTypeId")
+                    b.Property<int>("ProductsId")
                         .HasColumnType("integer");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
+                    b.HasKey("OrdersId", "ProductsId");
 
-                    b.HasKey("Id");
+                    b.HasIndex("ProductsId");
 
-                    b.ToTable("UserPaymentTypes");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            PaymentTypeId = 2,
-                            UserId = 1
-                        });
+                    b.ToTable("OrderProduct");
                 });
 
             modelBuilder.Entity("PaymentTypeUser", b =>
@@ -415,11 +370,26 @@ namespace bangazon.Migrations
                     b.ToTable("PaymentTypeUser");
                 });
 
-            modelBuilder.Entity("bangazon.Models.Product", b =>
+            modelBuilder.Entity("bangazon.Models.PaymentType", b =>
                 {
                     b.HasOne("bangazon.Models.Order", null)
-                        .WithMany("Products")
+                        .WithMany("PaymentTypes")
                         .HasForeignKey("OrderId");
+                });
+
+            modelBuilder.Entity("OrderProduct", b =>
+                {
+                    b.HasOne("bangazon.Models.Order", null)
+                        .WithMany()
+                        .HasForeignKey("OrdersId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("bangazon.Models.Product", null)
+                        .WithMany()
+                        .HasForeignKey("ProductsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("PaymentTypeUser", b =>
@@ -439,7 +409,7 @@ namespace bangazon.Migrations
 
             modelBuilder.Entity("bangazon.Models.Order", b =>
                 {
-                    b.Navigation("Products");
+                    b.Navigation("PaymentTypes");
                 });
 #pragma warning restore 612, 618
         }

@@ -6,7 +6,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace bangazon.Migrations
 {
-    public partial class initialCreate : Migration
+    public partial class InitialCreate : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -40,30 +40,20 @@ namespace bangazon.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "PaymentTypes",
+                name: "Products",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    PaymentMethod = table.Column<string>(type: "text", nullable: false)
+                    ProductName = table.Column<string>(type: "text", nullable: false),
+                    ProductDescription = table.Column<string>(type: "text", nullable: false),
+                    ProductPrice = table.Column<decimal>(type: "numeric", nullable: false),
+                    SellerId = table.Column<int>(type: "integer", nullable: false),
+                    ProductTypeId = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_PaymentTypes", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "ProductOrders",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    ProductId = table.Column<int>(type: "integer", nullable: false),
-                    OrderId = table.Column<int>(type: "integer", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_ProductOrders", x => x.Id);
+                    table.PrimaryKey("PK_Products", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -77,20 +67,6 @@ namespace bangazon.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_ProductTypes", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "UserPaymentTypes",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    UserId = table.Column<int>(type: "integer", nullable: false),
-                    PaymentTypeId = table.Column<int>(type: "integer", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_UserPaymentTypes", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -112,26 +88,46 @@ namespace bangazon.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Products",
+                name: "PaymentTypes",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    ProductName = table.Column<string>(type: "text", nullable: false),
-                    ProductDescription = table.Column<string>(type: "text", nullable: false),
-                    ProductPrice = table.Column<decimal>(type: "numeric", nullable: false),
-                    SellerId = table.Column<int>(type: "integer", nullable: false),
-                    ProductTypeId = table.Column<int>(type: "integer", nullable: false),
+                    PaymentMethod = table.Column<string>(type: "text", nullable: false),
                     OrderId = table.Column<int>(type: "integer", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Products", x => x.Id);
+                    table.PrimaryKey("PK_PaymentTypes", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Products_Orders_OrderId",
+                        name: "FK_PaymentTypes_Orders_OrderId",
                         column: x => x.OrderId,
                         principalTable: "Orders",
                         principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "OrderProduct",
+                columns: table => new
+                {
+                    OrdersId = table.Column<int>(type: "integer", nullable: false),
+                    ProductsId = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_OrderProduct", x => new { x.OrdersId, x.ProductsId });
+                    table.ForeignKey(
+                        name: "FK_OrderProduct_Orders_OrdersId",
+                        column: x => x.OrdersId,
+                        principalTable: "Orders",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_OrderProduct_Products_ProductsId",
+                        column: x => x.ProductsId,
+                        principalTable: "Products",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -175,28 +171,19 @@ namespace bangazon.Migrations
                 columns: new[] { "Id", "OrderDate", "StatusId", "UserId", "User_PaymentId" },
                 values: new object[,]
                 {
-                    { 1, new DateTime(2023, 8, 22, 19, 57, 45, 704, DateTimeKind.Local).AddTicks(9222), 1, 1, 1 },
-                    { 2, new DateTime(2023, 8, 22, 19, 57, 45, 704, DateTimeKind.Local).AddTicks(9261), 1, 2, 2 }
+                    { 1, new DateTime(2023, 8, 23, 8, 31, 20, 597, DateTimeKind.Local).AddTicks(6337), 1, 1, 1 },
+                    { 2, new DateTime(2023, 8, 23, 8, 31, 20, 597, DateTimeKind.Local).AddTicks(6369), 1, 2, 2 }
                 });
 
             migrationBuilder.InsertData(
                 table: "PaymentTypes",
-                columns: new[] { "Id", "PaymentMethod" },
+                columns: new[] { "Id", "OrderId", "PaymentMethod" },
                 values: new object[,]
                 {
-                    { 1, "Visa" },
-                    { 2, "Mastercard" },
-                    { 3, "Debit card" },
-                    { 4, "Gift card" }
-                });
-
-            migrationBuilder.InsertData(
-                table: "ProductOrders",
-                columns: new[] { "Id", "OrderId", "ProductId" },
-                values: new object[,]
-                {
-                    { 1, 1, 1 },
-                    { 2, 2, 2 }
+                    { 1, null, "Visa" },
+                    { 2, null, "Mastercard" },
+                    { 3, null, "Debit card" },
+                    { 4, null, "Gift card" }
                 });
 
             migrationBuilder.InsertData(
@@ -212,19 +199,14 @@ namespace bangazon.Migrations
 
             migrationBuilder.InsertData(
                 table: "Products",
-                columns: new[] { "Id", "OrderId", "ProductDescription", "ProductName", "ProductPrice", "ProductTypeId", "SellerId" },
+                columns: new[] { "Id", "ProductDescription", "ProductName", "ProductPrice", "ProductTypeId", "SellerId" },
                 values: new object[,]
                 {
-                    { 1, null, "Telecaster guitar", "Fender Telecaster", 850.00m, 1, 1 },
-                    { 2, null, "Stratocaster guitar", "Fender Stratocaster", 1050.00m, 1, 1 },
-                    { 3, null, "Jazzmaster guitar", "Fender Jazzmaster", 1800.00m, 1, 1 },
-                    { 4, null, "4-string Jazz bass guitar", "Fender Jazz Bass", 650.00m, 2, 1 }
+                    { 1, "Telecaster guitar", "Fender Telecaster", 850.00m, 1, 1 },
+                    { 2, "Stratocaster guitar", "Fender Stratocaster", 1050.00m, 1, 1 },
+                    { 3, "Jazzmaster guitar", "Fender Jazzmaster", 1800.00m, 1, 1 },
+                    { 4, "4-string Jazz bass guitar", "Fender Jazz Bass", 650.00m, 2, 1 }
                 });
-
-            migrationBuilder.InsertData(
-                table: "UserPaymentTypes",
-                columns: new[] { "Id", "PaymentTypeId", "UserId" },
-                values: new object[] { 1, 2, 1 });
 
             migrationBuilder.InsertData(
                 table: "Users",
@@ -238,18 +220,26 @@ namespace bangazon.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_OrderProduct_ProductsId",
+                table: "OrderProduct",
+                column: "ProductsId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PaymentTypes_OrderId",
+                table: "PaymentTypes",
+                column: "OrderId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_PaymentTypeUser_UsersId",
                 table: "PaymentTypeUser",
                 column: "UsersId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Products_OrderId",
-                table: "Products",
-                column: "OrderId");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "OrderProduct");
+
             migrationBuilder.DropTable(
                 name: "OrderStatuses");
 
@@ -257,16 +247,10 @@ namespace bangazon.Migrations
                 name: "PaymentTypeUser");
 
             migrationBuilder.DropTable(
-                name: "ProductOrders");
-
-            migrationBuilder.DropTable(
-                name: "Products");
-
-            migrationBuilder.DropTable(
                 name: "ProductTypes");
 
             migrationBuilder.DropTable(
-                name: "UserPaymentTypes");
+                name: "Products");
 
             migrationBuilder.DropTable(
                 name: "PaymentTypes");

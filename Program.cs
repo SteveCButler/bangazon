@@ -2,10 +2,24 @@ using bangazon.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Http.Json;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Hosting;
-
+var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 var builder = WebApplication.CreateBuilder(args);
+
+//ADD CORS
+builder.Services.AddCors(options =>
+{
+	options.AddPolicy(MyAllowSpecificOrigins,
+												policy =>
+												{
+													policy.WithOrigins("http://localhost:3000",
+																								"http://localhost:7040")
+																								.AllowAnyHeader()
+																								.AllowAnyMethod();
+												});
+});
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -25,6 +39,9 @@ builder.Services.Configure<JsonOptions>(options =>
 });
 
 var app = builder.Build();
+
+//Add for Cors
+app.UseCors(MyAllowSpecificOrigins);
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -69,6 +86,7 @@ app.MapGet("/api/user/{id}", (BangazonDbContext db, int id) =>
 app.MapGet("/api/products", (BangazonDbContext db) =>
 {
     var products = db.Products.ToList();
+    
 
     if (products == null)
     {
@@ -98,32 +116,106 @@ app.MapPost("/products", (BangazonDbContext db, Product product) =>
     return Results.Created($"/api/categories/product.Id", product);
 });
 
+//DELETE Product
+app.MapDelete("/api/product/{id}", (BangazonDbContext db, int id) =>
+{
+    Product product = db.Products.SingleOrDefault(o => o.Id == id);
+    if (product == null)
+    {
+        return Results.NotFound();
+    }
+    db.Products.Remove(product);
+    db.SaveChanges();
+    return Results.NoContent();
 
+});
 
-//app.MapGet("/order/{id}", (BangazonDbContext db, int id) =>
-//{
-//    var ordersList = db.ProductOrders.Where(x => x.OrderId == id).ToList();
-//    List<Product> products = new List<Product>();
-//    foreach (ProductOrder order in ordersList)
-//    {
-//        products.Add(db.Products.Single(x => x.Id == order.ProductId));
-//    }
-//    return products;
-//});
-
-app.MapGet("/order/{id}", (BangazonDbContext db, int id) =>
+app.MapPost("/order", (BangazonDbContext db, Order order) =>
 {
 
-    var order = db.Orders.Where(x => x.Id == id).Include(x => x.Products).FirstOrDefault();
+    db.Orders.Add(order);
+    db.SaveChanges();
+    return Results.Created($"/api/categories/product.Id", order);
+});
 
-    //var products = db.ProductOrders
-    //    .Where(po => po.OrderId == id)
-    //    .SelectMany(po => db.Products.Where(p => p.Id == po.ProductId))
-    //    .ToList();
+//DELETE Order
+app.MapDelete("/api/order/{id}", (BangazonDbContext db, int id) =>
+{
+    Order order = db.Orders.SingleOrDefault(o => o.Id == id);
+    if (order == null)
+    {
+        return Results.NotFound();
+    }
+    db.Orders.Remove(order);
+    db.SaveChanges();
+    return Results.NoContent();
+
+});
+
+
+//GET Order with Products by OrderId
+app.MapGet("/api/order/{id}/products", (BangazonDbContext db, int id) =>
+{
+
+    var order = db.Orders.Where(x => x.Id == id).Include(x =>x.Products).FirstOrDefault();
 
     return order;
 
 
+});
+
+
+//GET Product with related order
+app.MapGet("/api/product/{id}/orders", (BangazonDbContext db, int id) =>
+{
+    var product = db.Products.Include(p => p.Orders).FirstOrDefault(p => p.Id == id);
+    return product;
+});
+
+//Get All products that have orders
+app.MapGet("/api/product/orders", (BangazonDbContext db) =>
+{
+    var product = db.Products.Where(p => p.Orders.Any()).ToList();
+    return product;
+});
+
+//Get a sellers products that have been ordered
+app.MapGet("/api/product/orders/{sellerId}", (BangazonDbContext db, int id ) =>
+{
+    var product = db.Products.Where(p => p.Orders.Any()).Where(x => x.SellerId == id).ToList();
+    return product;
+});
+
+
+//ADD LIST of Products to Order
+app.MapPost("/api/order/{id}/addproduct/", (BangazonDbContext db, int id, List<int> productIdsToAdd) =>
+{
+    var order = db.Orders.FirstOrDefault(o => o.Id == id);
+    var productsToAdd = db.Products.Where(p => productIdsToAdd.Contains(p.Id)).ToList();
+    try
+    {
+        if (order.StatusId == 1)
+        {
+            foreach (var product in productsToAdd)
+
+            {
+
+                order.Products.Add(product);
+            }
+            db.SaveChanges();
+            return Results.Ok(order);
+
+        }
+        else
+        {
+            return Results.BadRequest("Order not in OPEN status - unable to add products");
+        }
+    }
+    catch (NullReferenceException)
+    {
+        return Results.BadRequest("Invalid OrderId ");
+    }
+    
 });
 
 app.Run();

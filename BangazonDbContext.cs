@@ -13,9 +13,6 @@ public class BangazonDbContext : DbContext
     public DbSet<Product> Products { get; set; }
     public DbSet<ProductType> ProductTypes { get; set; }
 
-    public DbSet<UserPaymentType> UserPaymentTypes { get; set; }
-
-    public DbSet<ProductOrder> ProductOrders { get; set; }
 
     public BangazonDbContext(DbContextOptions<BangazonDbContext> context) : base(context)
     {
@@ -23,6 +20,9 @@ public class BangazonDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        //define variable for join table
+        var orderProduct = modelBuilder.Entity("OrderProduct");
+
         // seed data with Users
         modelBuilder.Entity<User>().HasData(new User[]
         {
@@ -39,12 +39,14 @@ public class BangazonDbContext : DbContext
         new Order {Id = 2, UserId=2, StatusId=1, OrderDate= DateTime.Now, User_PaymentId=2},
         });
 
-        //seed data with ProductOrder
-        modelBuilder.Entity<ProductOrder>().HasData(new ProductOrder[]
-        {
-        new ProductOrder {Id = 1, OrderId=1, ProductId=1},
-        new ProductOrder {Id = 2, OrderId=2, ProductId=2},
-        });
+        //SEED join table OrderProduct
+
+        orderProduct.HasData(
+            new { OrdersId = 2, ProductsId = 3 },
+            new { OrdersId = 2, ProductsId = 4 }
+            );
+
+       
 
         //seed data with OrderStatus
         modelBuilder.Entity<OrderStatus>().HasData(new OrderStatus[]
@@ -67,20 +69,15 @@ public class BangazonDbContext : DbContext
 
        });
 
-        modelBuilder.Entity<UserPaymentType>().HasData(new UserPaymentType[]
-     {
-        new UserPaymentType {Id = 1, UserId=1, PaymentTypeId=2},
-        
-
-     });
+      
 
         //seed data with Product
         modelBuilder.Entity<Product>().HasData(new Product[]
        {
-        new Product {Id = 1, ProductName = "Fender Telecaster", ProductDescription="Telecaster guitar", ProductPrice=850.00M, ProductTypeId=1, SellerId=1},
-        new Product {Id = 2, ProductName = "Fender Stratocaster", ProductDescription="Stratocaster guitar", ProductPrice=1050.00M, ProductTypeId=1, SellerId=1},
-        new Product {Id = 3, ProductName = "Fender Jazzmaster", ProductDescription="Jazzmaster guitar", ProductPrice=1800.00M, ProductTypeId=1, SellerId=1},
-        new Product {Id = 4, ProductName = "Fender Jazz Bass", ProductDescription="4-string Jazz bass guitar", ProductPrice=650.00M, ProductTypeId=2, SellerId=1},
+        new Product {Id = 1, ProductName = "Fender Telecaster", ProductDescription="Telecaster guitar", ProductPrice=850.00M, ProductTypeId=1, SellerId=1, ProductTypeName = "Guitar"},
+        new Product {Id = 2, ProductName = "Fender Stratocaster", ProductDescription="Stratocaster guitar", ProductPrice=1050.00M, ProductTypeId=1, SellerId=1, ProductTypeName = "Guitar"},
+        new Product {Id = 3, ProductName = "Fender Jazzmaster", ProductDescription="Jazzmaster guitar", ProductPrice=1800.00M, ProductTypeId=1, SellerId=1, ProductTypeName = "Guitar"},
+        new Product {Id = 4, ProductName = "Fender Jazz Bass", ProductDescription="4-string Jazz bass guitar", ProductPrice=650.00M, ProductTypeId=2, SellerId=1, ProductTypeName = "Bass"},
 
        });
 

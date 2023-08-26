@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using bangazon.Models;
@@ -11,9 +12,10 @@ using bangazon.Models;
 namespace bangazon.Migrations
 {
     [DbContext(typeof(BangazonDbContext))]
-    partial class BangazonDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230826153353_seedOrderProduct")]
+    partial class seedOrderProduct
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -50,7 +52,7 @@ namespace bangazon.Migrations
                         new
                         {
                             Id = 1,
-                            OrderDate = new DateTime(2023, 8, 26, 10, 56, 47, 121, DateTimeKind.Local).AddTicks(3007),
+                            OrderDate = new DateTime(2023, 8, 26, 10, 33, 53, 99, DateTimeKind.Local).AddTicks(5514),
                             StatusId = 1,
                             UserId = 1,
                             User_PaymentId = 1
@@ -58,7 +60,7 @@ namespace bangazon.Migrations
                         new
                         {
                             Id = 2,
-                            OrderDate = new DateTime(2023, 8, 26, 10, 56, 47, 121, DateTimeKind.Local).AddTicks(3044),
+                            OrderDate = new DateTime(2023, 8, 26, 10, 33, 53, 99, DateTimeKind.Local).AddTicks(5554),
                             StatusId = 1,
                             UserId = 2,
                             User_PaymentId = 2
