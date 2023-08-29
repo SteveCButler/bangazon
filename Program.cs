@@ -81,6 +81,12 @@ app.MapDelete("/category/{id}", (BangazonDbContext db, int id) =>
 
 });
 
+//Get ALL Users
+app.MapGet("/api/users", (BangazonDbContext db) =>
+{
+    return db.Users.ToList();
+});
+
 //Get user by ID (User profile)  Issue #19
 app.MapGet("/api/user/{id}", (BangazonDbContext db, int id) =>
 {
@@ -101,7 +107,7 @@ app.MapGet("/api/user/{id}", (BangazonDbContext db, int id) =>
 });
 
 //create USER
-app.MapPost("/user", (BangazonDbContext db, User user) =>
+app.MapPost("/api/user", (BangazonDbContext db, User user) =>
 {
     db.Users.Add(user);
     db.SaveChanges();
@@ -109,10 +115,10 @@ app.MapPost("/user", (BangazonDbContext db, User user) =>
 });
 
 //Update USER
-app.MapPut("/user/{id}", (BangazonDbContext db, User user, int id) =>
+app.MapPut("/api/user/{id}", (BangazonDbContext db, User user, int id) =>
 {
     User userToUpdate = db.Users.SingleOrDefault(o => o.Id == id);
-    if(userToUpdate == null)
+    if (userToUpdate == null)
     {
         return Results.NotFound();
     }
@@ -127,7 +133,7 @@ app.MapPut("/user/{id}", (BangazonDbContext db, User user, int id) =>
 });
 
 //Delete USER By ID
-app.MapDelete("/user/{id}", (BangazonDbContext db, int id) =>
+app.MapDelete("/api/user/{id}", (BangazonDbContext db, int id) =>
 {
     
         User user = db.Users.SingleOrDefault(o => o.Id == id);
@@ -170,7 +176,7 @@ app.MapGet("/api/products/{id}", (BangazonDbContext db, int id) =>
 });
 
 //create Product 
-app.MapPost("/products", (BangazonDbContext db, Product product) =>
+app.MapPost("/api/products", (BangazonDbContext db, Product product) =>
 {
     db.Products.Add(product);
     db.SaveChanges();
@@ -191,7 +197,7 @@ app.MapDelete("/api/product/{id}", (BangazonDbContext db, int id) =>
 
 });
 
-app.MapPost("/order", (BangazonDbContext db, Order order) =>
+app.MapPost("/api/order", (BangazonDbContext db, Order order) =>
 {
 
     db.Orders.Add(order);
