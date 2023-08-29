@@ -67,18 +67,79 @@ app.MapPost("/categories", ( BangazonDbContext db, ProductType productType) =>
     return Results.Created($"/api/categories/productType.Id", productType);
 });
 
+//Delete ProductType (category)
+app.MapDelete("/category/{id}", (BangazonDbContext db, int id) =>
+{
+    ProductType productType = db.ProductTypes.SingleOrDefault(o => o.Id == id);
+    if (productType == null)
+    {
+        return Results.NotFound();
+    }
+    db.ProductTypes.Remove(productType);
+    db.SaveChanges();
+    return Results.NoContent();
 
+});
 
 //Get user by ID (User profile)  Issue #19
 app.MapGet("/api/user/{id}", (BangazonDbContext db, int id) =>
 {
+    try { 
     var user = db.Users.Single(x => x.Id == id);
-   
-    if(user == null)
+
+    if (user == null)
     {
         return Results.NotFound();
     }
     return Results.Ok(user);
+   }
+    catch (InvalidOperationException)
+    {
+        return Results.BadRequest("Invalid UserId ");
+    }
+
+});
+
+//create USER
+app.MapPost("/user", (BangazonDbContext db, User user) =>
+{
+    db.Users.Add(user);
+    db.SaveChanges();
+    return Results.Created($"/api/user/user.Id", user);
+});
+
+//Update USER
+app.MapPut("/user/{id}", (BangazonDbContext db, User user, int id) =>
+{
+    User userToUpdate = db.Users.SingleOrDefault(o => o.Id == id);
+    if(userToUpdate == null)
+    {
+        return Results.NotFound();
+    }
+    userToUpdate.Name = user.Name;
+    userToUpdate.Address = user.Address;
+    userToUpdate.Email = user.Email;
+    userToUpdate.Phone = user.Phone;
+    userToUpdate.isSeller = user.isSeller;
+
+    db.SaveChanges();
+    return Results.Created($"/api/user/user.Id", user);
+});
+
+//Delete USER By ID
+app.MapDelete("/user/{id}", (BangazonDbContext db, int id) =>
+{
+    
+        User user = db.Users.SingleOrDefault(o => o.Id == id);
+        if (user == null)
+        {
+            return Results.NotFound();
+        }
+        db.Users.Remove(user);
+        db.SaveChanges();
+        return Results.NoContent();
+    
+    
 
 });
 
@@ -113,7 +174,7 @@ app.MapPost("/products", (BangazonDbContext db, Product product) =>
 {
     db.Products.Add(product);
     db.SaveChanges();
-    return Results.Created($"/api/categories/product.Id", product);
+    return Results.Created($"/api/products/product.Id", product);
 });
 
 //DELETE Product
@@ -135,7 +196,7 @@ app.MapPost("/order", (BangazonDbContext db, Order order) =>
 
     db.Orders.Add(order);
     db.SaveChanges();
-    return Results.Created($"/api/categories/product.Id", order);
+    return Results.Created($"/api/order/order.Id", order);
 });
 
 //DELETE Order
